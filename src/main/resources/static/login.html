@@ -450,7 +450,11 @@
         }));
         // Redirect after short delay
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          if (data.role === 'TEACHER') {
+  window.location.href = 'teacher-dashboard.html';
+} else {
+  window.location.href = 'student-dashboard.html';
+}
         }, 1200);
       } else {
         showAlert(data.message || 'Login failed. Please try again.');
