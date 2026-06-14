@@ -450,7 +450,9 @@
         }));
         // Redirect after short delay
         setTimeout(() => {
-          if (data.role === 'TEACHER') {
+          alert('Role received: ' + data.role);
+const role = (data.role || '').toLowerCase();
+if (role === 'teacher') {
   window.location.href = 'teacher-dashboard.html';
 } else {
   window.location.href = 'student-dashboard.html';
