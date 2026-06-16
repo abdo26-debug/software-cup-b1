@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard — SoftCup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #1e1e2e;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --success: #4ade80;
+      --warning: #facc15;
+      --error: #f87171;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px; min-height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); display: flex; flex-direction: column;
+      padding: 24px 0; position: fixed; top: 0; left: 0; bottom: 0;
+    }
+    .brand { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+    .brand-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+    .brand-role { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    .nav-section { padding: 0 12px; margin-bottom: 8px; }
+    .nav-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 8px; margin-bottom: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 10px; cursor: pointer; font-size: 0.9rem; color: var(--muted);
+      transition: all 0.15s; margin-bottom: 2px; text-decoration: none;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+    .user-info .name { font-size: 0.875rem; font-weight: 500; }
+    .user-info .role-badge { font-size: 0.7rem; color: var(--muted); }
+
+    /* Main content */
+    .main { margin-left: 240px; flex: 1; padding: 32px; }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.6rem; margin-bottom: 4px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; }
+
+    /* Stat cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+    .stat-icon.purple { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .stat-icon.pink { background: rgba(255,101,132,0.15); color: var(--accent2); }
+    .stat-icon.green { background: rgba(74,222,128,0.15); color: var(--success); }
+    .stat-icon.yellow { background: rgba(250,204,21,0.15); color: var(--warning); }
+    .stat-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.8rem; margin-bottom: 2px; }
+    .stat-label { font-size: 0.8rem; color: var(--muted); }
+
+    /* Grid layout */
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .full-width { grid-column: 1 / -1; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 1rem; }
+    .card-action { font-size: 0.8rem; color: var(--accent); cursor: pointer; text-decoration: none; }
+
+    /* Course list */
+    .course-item { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .course-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .course-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+    .course-info { flex: 1; }
+    .course-name { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+    .course-teacher { font-size: 0.78rem; color: var(--muted); }
+    .progress-wrap { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { width: 80px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .progress-pct { font-size: 0.78rem; color: var(--muted); }
+
+    /* Assignment list */
+    .assignment-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .assignment-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .assignment-info { flex: 1; }
+    .assignment-name { font-size: 0.88rem; font-weight: 500; margin-bottom: 3px; }
+    .assignment-course { font-size: 0.75rem; color: var(--muted); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 500; }
+    .badge.pending { background: rgba(250,204,21,0.15); color: var(--warning); }
+    .badge.submitted { background: rgba(74,222,128,0.15); color: var(--success); }
+    .badge.overdue { background: rgba(248,113,113,0.15); color: var(--error); }
+    .due-date { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--border); border-radius: 12px; padding: 28px;
+      text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-area:hover { border-color: var(--accent); background: rgba(108,99,255,0.05); }
+    .upload-icon { color: var(--muted); margin-bottom: 10px; }
+    .upload-text { font-size: 0.9rem; color: var(--muted); }
+    .upload-text span { color: var(--accent); font-weight: 500; cursor: pointer; }
+    .upload-hint { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+    .btn { padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #7c74ff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--surface2); }
+
+    /* Grade table */
+    .grade-table { width: 100%; border-collapse: collapse; }
+    .grade-table th { text-align: left; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0 10px; font-weight: 500; }
+    .grade-table td { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .grade-table tr:last-child td { border-bottom: none; }
+    .grade-pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .grade-a { background: rgba(74,222,128,0.15); color: var(--success); }
+    .grade-b { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .grade-c { background: rgba(250,204,21,0.15); color: var(--warning); }
+
+    /* Alert */
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 0.875rem; margin-bottom: 20px; display: none; align-items: center; gap: 8px; }
+    .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--success); display: flex; }
+
+    /* Modal overlay */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; }
+    .modal h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
+    .modal p { color: var(--muted); font-size: 0.875rem; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; }
+    .form-group select, .form-group input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; }
+    .form-group select:focus, .form-group input:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 20px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name"><div class="brand-dot"></div>SoftCup</div>
+    <div class="brand-role">Student Portal</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Menu</div>
+    <a class="nav-item active" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#" onclick="showSection('courses')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      My Courses
+    </a>
+    <a class="nav-item" href="#" onclick="openUploadModal()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      Submit Assignment
+    </a>
+    <a class="nav-item" href="#" onclick="showSection('grades')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Grades
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      PDF Reports
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">?</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Loading...</div>
+        <div class="role-badge">Student</div>
+      </div>
+    </div>
+    <a href="login.html" style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 4px;color:var(--muted);font-size:0.85rem;text-decoration:none;" onclick="localStorage.removeItem('user')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Sign out
+    </a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <div class="page-header">
+    <h1>Welcome back, <span id="welcomeName">Student</span> 👋</h1>
+    <p>Here's what's happening with your courses today.</p>
+  </div>
+
+  <div class="alert success" id="successAlert">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="successMsg"></span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      </div>
+      <div class="stat-value">4</div>
+      <div class="stat-label">Enrolled courses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pink">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      </div>
+      <div class="stat-value">3</div>
+      <div class="stat-label">Pending assignments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="stat-value">8</div>
+      <div class="stat-label">Submitted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon yellow">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+      </div>
+      <div class="stat-value">85%</div>
+      <div class="stat-label">Average grade</div>
+    </div>
+  </div>
+
+  <!-- Content grid -->
+  <div class="content-grid">
+    <!-- Courses -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">My Courses</div>
+        <a href="#" class="card-action">View all</a>
+      </div>
+      <div class="course-item">
+        <div class="course-icon" style="background:rgba(108,99,255,0.15);color:var(--accent);">CS</div>
+        <div class="course-info">
+          <div class="course-name">Data Structures</div>
+          <div class="course-teacher">Prof. Zhang Wei</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+          <div class="progress-pct">72%</div>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-icon" style="background:rgba(255,101,132,0.15);color:var(--accent2);">WD</div>
+        <div class="course-info">
+          <div class="course-name">Web Development</div>
+          <div class="course-teacher">Prof. Li Ming</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--success)"></div></div>
+          <div class="progress-pct">90%</div>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-icon" style="background:rgba(74,222,128,0.15);color:var(--success);">DB</div>
+        <div class="course-info">
+          <div class="course-name">Database Systems</div>
+          <div class="course-teacher">Prof. Chen Fang</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:55%;background:var(--warning)"></div></div>
+          <div class="progress-pct">55%</div>
+        </div>
+      </div>
+      <div class="course-item">
+        <div class="course-icon" style="background:rgba(250,204,21,0.15);color:var(--warning);">AI</div>
+        <div class="course-info">
+          <div class="course-name">Intro to AI</div>
+          <div class="course-teacher">Prof. Wang Hui</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--accent2)"></div></div>
+          <div class="progress-pct">40%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignments -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Assignments</div>
+        <a href="#" class="card-action" onclick="openUploadModal()">+ Submit</a>
+      </div>
+      <div class="assignment-item">
+        <div style="flex:1">
+          <div class="assignment-name">Binary Tree Implementation</div>
+          <div class="assignment-course">Data Structures</div>
+          <div class="due-date">Due: June 15, 2026</div>
+        </div>
+        <span class="badge pending">Pending</span>
+      </div>
+      <div class="assignment-item">
+        <div style="flex:1">
+          <div class="assignment-name">Login Page UI</div>
+          <div class="assignment-course">Web Development</div>
+          <div class="due-date">Submitted: June 7, 2026</div>
+        </div>
+        <span class="badge submitted">Submitted</span>
+      </div>
+      <div class="assignment-item">
+        <div style="flex:1">
+          <div class="assignment-name">SQL Query Optimization</div>
+          <div class="assignment-course">Database Systems</div>
+          <div class="due-date">Due: June 13, 2026</div>
+        </div>
+        <span class="badge overdue">Overdue</span>
+      </div>
+      <div class="assignment-item">
+        <div style="flex:1">
+          <div class="assignment-name">Neural Network Report</div>
+          <div class="assignment-course">Intro to AI</div>
+          <div class="due-date">Due: June 20, 2026</div>
+        </div>
+        <span class="badge pending">Pending</span>
+      </div>
+    </div>
+
+    <!-- Grades -->
+    <div class="card full-width">
+      <div class="card-header">
+        <div class="card-title">Recent Grades</div>
+        <a href="#" class="card-action">Download PDF</a>
+      </div>
+      <table class="grade-table">
+        <thead>
+          <tr>
+            <th>Assignment</th>
+            <th>Course</th>
+            <th>Score</th>
+            <th>Grade</th>
+            <th>Feedback</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Linked List Lab</td>
+            <td style="color:var(--muted)">Data Structures</td>
+            <td>92/100</td>
+            <td><span class="grade-pill grade-a">A</span></td>
+            <td style="color:var(--muted);font-size:0.8rem">Excellent work!</td>
+          </tr>
+          <tr>
+            <td>HTML/CSS Project</td>
+            <td style="color:var(--muted)">Web Development</td>
+            <td>88/100</td>
+            <td><span class="grade-pill grade-b">B+</span></td>
+            <td style="color:var(--muted);font-size:0.8rem">Good structure, improve responsiveness</td>
+          </tr>
+          <tr>
+            <td>ER Diagram Design</td>
+            <td style="color:var(--muted)">Database Systems</td>
+            <td>75/100</td>
+            <td><span class="grade-pill grade-c">C+</span></td>
+            <td style="color:var(--muted);font-size:0.8rem">Review normalization rules</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <h3>Submit Assignment</h3>
+    <p>Upload your file for grading.</p>
+    <div class="form-group">
+      <label>Course</label>
+      <select id="uploadCourse">
+        <option value="">Select course...</option>
+        <option>Data Structures</option>
+        <option>Web Development</option>
+        <option>Database Systems</option>
+        <option>Intro to AI</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Assignment</label>
+      <input type="text" id="uploadAssignment" placeholder="Assignment title"/>
+    </div>
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      </div>
+      <div class="upload-text"><span>Click to upload</span> or drag and drop</div>
+      <div class="upload-hint">PDF, ZIP, Java files up to 10MB</div>
+      <div id="fileName" style="margin-top:8px;font-size:0.85rem;color:var(--accent);"></div>
+    </div>
+    <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)"/>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAssignment()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('user') || '{"name":"Student","role":"STUDENT"}');
+  document.getElementById('welcomeName').textContent = user.name || 'Student';
+  document.getElementById('sidebarName').textContent = user.name || 'Student';
+  document.getElementById('sidebarAvatar').textContent = (user.name || 'S').charAt(0).toUpperCase();
+
+  function openUploadModal() { document.getElementById('uploadModal').classList.add('show'); }
+  function closeUploadModal() { document.getElementById('uploadModal').classList.remove('show'); }
+
+  function handleFile(input) {
+    if (input.files[0]) {
+      document.getElementById('fileName').textContent = '📎 ' + input.files[0].name;
+    }
+  }
+
+  function submitAssignment() {
+    const course = document.getElementById('uploadCourse').value;
+    const assignment = document.getElementById('uploadAssignment').value;
+    const file = document.getElementById('fileInput').files[0];
+    if (!course || !assignment || !file) {
+      alert('Please fill in all fields and select a file.');
+      return;
+    }
+    closeUploadModal();
+    const alert = document.getElementById('successAlert');
+    document.getElementById('successMsg').textContent = `"${assignment}" submitted successfully for ${course}!`;
+    alert.style.display = 'flex';
+    setTimeout(() => alert.style.display = 'none', 4000);
+  }
+
+  document.getElementById('uploadModal').addEventListener('click', function(e) {
+    if (e.target === this) closeUploadModal();
+  });
+</script>
+</body>
+</html>

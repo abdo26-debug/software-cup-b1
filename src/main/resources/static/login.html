@@ -450,7 +450,17 @@
         }));
         // Redirect after short delay
         setTimeout(() => {
+<<<<<<< HEAD
           window.location.href = 'dashboard.html';
+=======
+          alert('Role received: ' + data.role);
+const role = (data.role || '').toLowerCase();
+if (role === 'teacher') {
+  window.location.href = 'teacher-dashboard.html';
+} else {
+  window.location.href = 'student-dashboard.html';
+}
+>>>>>>> e19190c421a465570ff604eacd9252bd95e12fab
         }, 1200);
       } else {
         showAlert(data.message || 'Login failed. Please try again.');
